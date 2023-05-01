@@ -1,4 +1,4 @@
-// Lora Node   changed by rah
+// Lora Node
 #include <SPI.h>
 #include <LoRa.h>
 
@@ -18,12 +18,22 @@ void setup() {
 }
 
 void loop() {
+  
   Serial.print("Sending packet: ");
   Serial.println(counter);
 
   // send packet
   LoRa.beginPacket();
-  LoRa.print("hello ");
+  if (isSmokeDetected()) {
+    LoRa.print("Smoke Detected");
+  } else {
+    LoRa.print("Smoke Not Detected");
+  }
+
+  if (flameCount() >= 2) {
+    LoRa.print(" || Flame Detected || "); 
+  }
+  
   LoRa.print(counter);
   LoRa.endPacket();
 
