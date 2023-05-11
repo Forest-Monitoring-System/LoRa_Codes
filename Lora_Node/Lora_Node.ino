@@ -50,7 +50,7 @@ void loop() {
   }
 
   if (flameCount() >= 2) {
-    LoRa.print(" || Flame Detected || ");
+    LoRa.print("Flame Detected");
     oled("Flame Detected",1,20);
  
   }
