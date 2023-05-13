@@ -42,6 +42,8 @@ void setup() {
   // ranges from 0-0xFF
   LoRa.setSyncWord(0xF3);
   //Serial.println("LoRa Initializing OK!");
+
+  db_init();
 }
 
 void loop() {
@@ -55,6 +57,9 @@ void loop() {
     while (LoRa.available()) {
       String LoRaData = LoRa.readString();
       Serial.println(LoRaData); 
+
+      send_msg(false);      
+
     display.clearDisplay(); 
     display.setTextSize(1);
     display.setTextColor(SH110X_WHITE);
@@ -62,7 +67,7 @@ void loop() {
     display.print("FOREST MONITOR");
     display.setCursor(12,10);
     display.print("_________________");    
-    delay(2000);  
+    // delay(100);  
     display.display();
   
     

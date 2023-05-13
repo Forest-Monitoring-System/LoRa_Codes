@@ -7,7 +7,7 @@ void oled(String msg,int x,int y){
     display.setTextColor(SH110X_WHITE);
     display.setCursor(x,y);
     display.print("   "+msg);
-    delay(2000);  
+    // delay(100);  
     display.display(); 
      
 }
