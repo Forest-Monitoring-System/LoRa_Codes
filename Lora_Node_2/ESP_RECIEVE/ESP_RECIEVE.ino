@@ -14,7 +14,7 @@
 Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //define the pins used by the transceiver module
-#define ss 5
+#define css 5
 #define rst 14
 #define dio0 2
 
@@ -30,7 +30,7 @@ void setup() {
   Serial.println("LoRa Receiver");
 
   //setup LoRa transceiver module
-  LoRa.setPins(ss, rst, dio0);
+  LoRa.setPins(css, rst, dio0);
   while (!Serial);
   LoRa.begin(433E6);  
   //while (!LoRa.begin(433E6)) {
@@ -48,6 +48,7 @@ void setup() {
 
 void loop() {
   // try to parse packet
+  send_msg(false);  
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
@@ -58,7 +59,7 @@ void loop() {
       String LoRaData = LoRa.readString();
       Serial.println(LoRaData); 
 
-      send_msg(false);      
+      // send_msg(false);      
 
     display.clearDisplay(); 
     display.setTextSize(1);

@@ -7,15 +7,18 @@
 //Provide the RTDB payload printing info and other helper functions.
 #include "addons/RTDBHelper.h"
 
-// Insert your network credentials
-#define WIFI_SSID "Redmi Note 9 Pro Max"
-#define WIFI_PASSWORD "12345678"
+// // Insert your network credentials
+// #define WIFI_SSID "Redmi Note 9 Pro Max"
+// #define WIFI_PASSWORD "12345678"
+
+#define WIFI_SSID "Home wifi"
+#define WIFI_PASSWORD "youwillneverknow"
 
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyDWjNUhJ8LaPVPsytvWwu0Q6nxXwJ4wIac"
 
 // Insert RTDB URLefine the RTDB URL */
-#define DATABASE_URL "https://console.firebase.google.com/u/0/project/forest-monitoring-system/database/forest-monitoring-system-default-rtdb/data/~2F" 
+#define DATABASE_URL "https://forest-monitoring-system-default-rtdb.asia-southeast1.firebasedatabase.app/" 
 
 //Define Firebase Data object
 FirebaseData fbdo;
@@ -26,7 +29,7 @@ FirebaseConfig config;
 unsigned long sendDataPrevMillis = 0;
 bool signupOK = false;
 
-void db_init()){
+void db_init(){
   // Serial.begin(115200);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
