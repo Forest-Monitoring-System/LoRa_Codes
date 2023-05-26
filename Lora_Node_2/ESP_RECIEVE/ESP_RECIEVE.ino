@@ -2,6 +2,7 @@
 #include <LoRa.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
+#include <ArduinoJson.h>
 
 
 
@@ -21,6 +22,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 void setup() {
   //initialize Serial Monitor
   Serial.begin(9600);
+  StaticJsonDocument<200> doc;  
   display.begin(i2c_Address, true); // Address 0x3C default
   
   display.display();
@@ -58,7 +60,13 @@ void loop() {
     while (LoRa.available()) {
       String LoRaData = LoRa.readString();
       Serial.println(LoRaData); 
+            
+      deserializeJson(doc, json);
+      int smoke=  doc["msmoke"];
+          
+      int flame =doc["mflame"];
 
+      int counter=doc["ccount"];
       // send_msg(false);      
 
     display.clearDisplay(); 
