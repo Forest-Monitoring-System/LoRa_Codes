@@ -48,11 +48,14 @@ void setup() {
 
 void loop() {
   // try to parse packet
-  send_msg(false);  
+  // send_msg(false);  
   int packetSize = LoRa.parsePacket();
+
   if (packetSize) {
     // received a packet
-    //Serial.print("Received packet '");
+    Serial.print("Received packet '");
+    Serial.print("Packet Size");
+    Serial.println(packetSize);
 
     // read packet
     while (LoRa.available()) {
