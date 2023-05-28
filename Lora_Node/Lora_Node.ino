@@ -1,4 +1,5 @@
 // Lora Node
+#include <ArduinoJson.h>
 #include <SPI.h>
 #include <LoRa.h>
 #include <Wire.h>
@@ -19,6 +20,7 @@ int counter = 0;
 void setup() {
   Serial.begin(115200);
   delay(250); // wait for the OLED to power up
+  StaticJsonDocument<200> doc;  
   display.begin(i2c_Address, true); // Address 0x3C default
  
   display.display();
@@ -40,22 +42,34 @@ void loop() {
 
   // send packet
   LoRa.beginPacket();
+int smoke =0; 
+int flcount=0 ;
   if (isSmokeDetected()) {
-    LoRa.print("Smoke Detected");
+     smoke=1; 
+    //LoRa.print("Smoke Detected");
     oled("Smoke Detected",1,10) ;        
   } 
   else {
-    LoRa.print("Smoke Not Detected");
+    smoke =0;
+    //LoRa.print("Smoke Not Detected");
     oled("Smoke Not Detected",1,10) ;   
   }
 
   if (flameCount() >= 2) {
-    LoRa.print("Flame Detected");
+    flcount=1;    
+    //LoRa.print("Flame Detected");
     oled("Flame Detected",1,20);
  
   }
-  
-  LoRa.print(counter);
+doc["msmoke"]=smoke;
+doc ["mflame"]=flcount;
+doc["ccount"]=counter;
+char serialized_data[];
+serializeJson(doc, serialized_data); 
+
+
+       
+  LoRa.print(serialized_data);
   LoRa.endPacket();
 
   counter++;
