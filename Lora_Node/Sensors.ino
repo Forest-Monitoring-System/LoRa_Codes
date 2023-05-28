@@ -5,6 +5,7 @@
 bool isSmokeDetected() {
   bool smokeDetected = false;
   int smokeVal = analogRead(SMOKE_PIN);
+  Serial.println(smokeVal);
   if (smokeVal > SMOKE_THRESHOLD) {
     smokeDetected = true;
   }
@@ -22,5 +23,33 @@ int flameCount() {
   if (analogRead(A4) > FLAME_THRESHOLD) count++;
   if (analogRead(A5) > FLAME_THRESHOLD) count++;
   return count;
+}
+//////////////////////////////////////////////
+
+//DHT11 Sensor Code.....
+#include "DHT.h"
+#define DHTPIN 3
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void dht_init() {
+  dht.begin();
+  delay(100);
+}
+
+float get_humid() {
+  if (dht.readHumidity() == NULL)
+    return 0;
+  else 
+    return dht.readHumidity();
+}
+
+float get_temp() {
+  // Serial.println(typeof(dht.readTemperature()));
+  if (dht.readTemperature() == NULL)
+    return 0;
+  else 
+    return dht.readTemperature();
 }
 //////////////////////////////////////////////

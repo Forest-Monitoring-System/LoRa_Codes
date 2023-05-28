@@ -64,23 +64,75 @@ void db_init(){
   Firebase.reconnectWiFi(true);
 }
 
-void send_msg(bool smoke){
+void send_msg(int smoke, int flame, int count, float temp, float humid){
   bool data_sent = false;
   while (!data_sent){
     if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 5000 || sendDataPrevMillis == 0)){
       sendDataPrevMillis = millis();
-      // Write an Int number on the database path test/int
-      if (Firebase.RTDB.setInt(&fbdo, "node_1/smoke_detected", (smoke) ? 1:0)){
+      // Writing the value of smoke
+      if (Firebase.RTDB.setInt(&fbdo, "node_1/smoke_detected", smoke)){
         Serial.println("PASSED");
-        Serial.println("PATH: " + fbdo.dataPath());
-        Serial.println("TYPE: " + fbdo.dataType());
+        // Serial.println("PATH: " + fbdo.dataPath());
+        // Serial.println("TYPE: " + fbdo.dataType());
         data_sent = true;
       }
       else {
         Serial.println("FAILED");
         Serial.println("REASON: " + fbdo.errorReason());
+        data_sent = false;
       }
       
+      // Writing the value of flame
+      if (Firebase.RTDB.setInt(&fbdo, "node_1/flame_detected", flame)){
+        Serial.println("PASSED");
+        // Serial.println("PATH: " + fbdo.dataPath());
+        // Serial.println("TYPE: " + fbdo.dataType());
+        data_sent = true;
+      }
+      else {
+        Serial.println("FAILED");
+        Serial.println("REASON: " + fbdo.errorReason());
+        data_sent = false;
+      }
+
+      // Writing the value of count
+      if (Firebase.RTDB.setInt(&fbdo, "node_1/count", count)){
+        Serial.println("PASSED");
+        // Serial.println("PATH: " + fbdo.dataPath());
+        // Serial.println("TYPE: " + fbdo.dataType());
+        data_sent = true;
+      }
+      else {
+        Serial.println("FAILED");
+        Serial.println("REASON: " + fbdo.errorReason());
+        data_sent = false;
+      }
+
+      // Writing the value of temperature
+      if (Firebase.RTDB.setInt(&fbdo, "node_1/temperature", temp)){
+        Serial.println("PASSED");
+        // Serial.println("PATH: " + fbdo.dataPath());
+        // Serial.println("TYPE: " + fbdo.dataType());
+        data_sent = true;
+      }
+      else {
+        Serial.println("FAILED");
+        Serial.println("REASON: " + fbdo.errorReason());
+        data_sent = false;
+      }
+
+      // Writing the value of humidity
+      if (Firebase.RTDB.setInt(&fbdo, "node_1/humidity", humid)){
+        Serial.println("PASSED");
+        // Serial.println("PATH: " + fbdo.dataPath());
+        // Serial.println("TYPE: " + fbdo.dataType());
+        data_sent = true;
+      }
+      else {
+        Serial.println("FAILED");
+        Serial.println("REASON: " + fbdo.errorReason());
+        data_sent = false;
+      }
     }
   }
   

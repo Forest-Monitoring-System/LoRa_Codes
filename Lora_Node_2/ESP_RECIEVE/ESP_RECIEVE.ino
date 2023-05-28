@@ -19,10 +19,11 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 #define rst 14
 #define dio0 2
 
+StaticJsonDocument<200> doc;  
+
 void setup() {
   //initialize Serial Monitor
   Serial.begin(9600);
-  StaticJsonDocument<200> doc;  
   display.begin(i2c_Address, true); // Address 0x3C default
   
   display.display();
@@ -64,23 +65,26 @@ void loop() {
       String LoRaData = LoRa.readString();
       Serial.println(LoRaData); 
             
-      deserializeJson(doc, json);
-      int smoke=  doc["msmoke"];
-          
-      int flame =doc["mflame"];
+      deserializeJson(doc, LoRaData);
+      int smoke   = doc["smoke"];          
+      int flame   = doc["flame"];
+      int counter = doc["count"];  
+      float temp    = doc["temp"];  
+      float humid    = doc["humid"];
 
-      int counter=doc["ccount"];
-      // send_msg(false);      
+      send_msg(smoke, flame, counter, temp, humid);
 
-    display.clearDisplay(); 
-    display.setTextSize(1);
-    display.setTextColor(SH110X_WHITE);
-    display.setCursor(15,0);
-    display.print("FOREST MONITOR");
-    display.setCursor(12,10);
-    display.print("_________________");    
-    // delay(100);  
-    display.display();
+
+
+      display.clearDisplay(); 
+      display.setTextSize(1);
+      display.setTextColor(SH110X_WHITE);
+      display.setCursor(15,0);
+      display.print("FOREST MONITOR");
+      display.setCursor(12,10);
+      display.print("_________________");    
+      // delay(100);  
+      display.display();
   
     
       oled(LoRaData,0,30);      

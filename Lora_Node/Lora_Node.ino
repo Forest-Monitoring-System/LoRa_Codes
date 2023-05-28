@@ -16,17 +16,21 @@
 #define LOGO16_GLCD_WIDTH  16
 Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 int counter = 0;
+StaticJsonDocument<200> doc;  
 
 void setup() {
   Serial.begin(115200);
   delay(250); // wait for the OLED to power up
-  StaticJsonDocument<200> doc;  
-  display.begin(i2c_Address, true); // Address 0x3C default
+  
+  // display.begin(i2c_Address, true); // Address 0x3C default
  
-  display.display();
+  // display.display();
   delay(2000);  
-  while (!Serial);
+  // while (!Serial);
+  
   LoRa.begin(433E6);
+  dht_init();
+  
 
   Serial.println("LoRa Sender");
 
@@ -42,33 +46,37 @@ void loop() {
 
   // send packet
   LoRa.beginPacket();
-int smoke =0; 
-int flcount=0 ;
+  int smoke =0; 
+  int flcount=0 ;
   if (isSmokeDetected()) {
      smoke=1; 
     //LoRa.print("Smoke Detected");
-    oled("Smoke Detected",1,10) ;        
+    // oled("Smoke Detected",1,10) ;        
   } 
   else {
     smoke =0;
     //LoRa.print("Smoke Not Detected");
-    oled("Smoke Not Detected",1,10) ;   
+    // oled("Smoke Not Detected",1,10) ;   
   }
 
   if (flameCount() >= 2) {
     flcount=1;    
     //LoRa.print("Flame Detected");
-    oled("Flame Detected",1,20);
+    // oled("Flame Detected",1,20);
  
   }
-doc["msmoke"]=smoke;
-doc ["mflame"]=flcount;
-doc["ccount"]=counter;
-char serialized_data[];
-serializeJson(doc, serialized_data); 
+
+  doc["smoke"] = smoke;
+  doc["flame"] = flcount;
+  doc["count"] = counter;
+  doc["temp"]  = get_temp();
+  doc["humid"] = get_humid();
+
+  char serialized_data[100];
+  serializeJson(doc, serialized_data); 
 
 
-       
+  Serial.println(serialized_data);
   LoRa.print(serialized_data);
   LoRa.endPacket();
 
