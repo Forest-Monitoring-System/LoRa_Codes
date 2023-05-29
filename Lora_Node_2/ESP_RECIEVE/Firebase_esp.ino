@@ -28,6 +28,7 @@ FirebaseConfig config;
 
 unsigned long sendDataPrevMillis = 0;
 bool signupOK = false;
+bool db_initialised = false;
 
 void db_init(){
   // Serial.begin(115200);
@@ -37,6 +38,8 @@ void db_init(){
     Serial.print(".");
     delay(300);
   }
+
+  // if ((WiFi.status() == WL_CONNECTED) && !db_initialised)
   Serial.println();
   Serial.print("Connected with IP: ");
   Serial.println(WiFi.localIP());

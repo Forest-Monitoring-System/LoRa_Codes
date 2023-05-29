@@ -26,15 +26,15 @@ void setup() {
   Serial.begin(9600);
   display.begin(i2c_Address, true); // Address 0x3C default
   
-  display.display();
-  //display.clearDisplay();   
+  display_welcome();
+  display_wifi(false);
   delay(2000);    
-  while (!Serial);
+  // while (!Serial);
   Serial.println("LoRa Receiver");
 
   //setup LoRa transceiver module
   LoRa.setPins(css, rst, dio0);
-  while (!Serial);
+  // while (!Serial);
   LoRa.begin(433E6);  
   //while (!LoRa.begin(433E6)) {
     //Serial.println(".");
