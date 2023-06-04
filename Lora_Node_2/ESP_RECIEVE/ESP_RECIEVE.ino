@@ -4,7 +4,7 @@
 #include <Adafruit_SH110X.h>
 #include <ArduinoJson.h>
 
-
+#include <WiFi.h>
 
 #define i2c_Address 0x3c
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -19,16 +19,39 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 #define rst 14
 #define dio0 2
 
-StaticJsonDocument<200> doc;  
+StaticJsonDocument<200> doc; 
+int smoke=0, flame=0, counter=0;  
+float temp=0.0, humid=0.0; 
+bool wifi_connected = false;
+char ip_addr[20];
+
+void WiFiDisconnectEvent(WiFiEvent_t event){
+  Serial.printf("[WiFi-event] event: %d\n", event);
+  wifi_connected = false;
+  check_wifi();
+  Serial.print(event);
+  update_oled();
+}
+
+void WiFiConnectEvent (WiFiEvent_t event) {
+  wifi_connected = true;
+  check_wifi();
+
+  // strcpy(ip_addr, WiFi.localIP().toString().c_str());
+  
+  update_oled();
+}
 
 void setup() {
   //initialize Serial Monitor
   Serial.begin(9600);
   display.begin(i2c_Address, true); // Address 0x3C default
-  
+
   display_welcome();
-  display_wifi(false);
-  delay(2000);    
+  
+  wifi_init();
+  
+  db_init();
   // while (!Serial);
   Serial.println("LoRa Receiver");
 
@@ -46,10 +69,11 @@ void setup() {
   LoRa.setSyncWord(0xF3);
   //Serial.println("LoRa Initializing OK!");
 
-  db_init();
+  update_oled();
 }
 
 void loop() {
+  check_wifi();
   // try to parse packet
   // send_msg(false);  
   int packetSize = LoRa.parsePacket();
@@ -66,28 +90,17 @@ void loop() {
       Serial.println(LoRaData); 
             
       deserializeJson(doc, LoRaData);
-      int smoke   = doc["smoke"];          
-      int flame   = doc["flame"];
-      int counter = doc["count"];  
-      float temp    = doc["temp"];  
-      float humid    = doc["humid"];
+      smoke   = doc["smoke"];          
+      flame   = doc["flame"];
+      counter = doc["count"];  
+      temp  = doc["temp"];  
+      humid = doc["humid"];
 
       send_msg(smoke, flame, counter, temp, humid);
 
+      update_oled();
 
-
-      display.clearDisplay(); 
-      display.setTextSize(1);
-      display.setTextColor(SH110X_WHITE);
-      display.setCursor(15,0);
-      display.print("FOREST MONITOR");
-      display.setCursor(12,10);
-      display.print("_________________");    
-      // delay(100);  
-      display.display();
-  
-    
-      oled(LoRaData,0,30);      
+      // oled(LoRaData,0,30);      
     }
 
     // print RSSI of packet

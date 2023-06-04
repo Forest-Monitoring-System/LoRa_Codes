@@ -107,11 +107,53 @@ void display_welcome() {
   display.clearDisplay(); 
 }
 
-void display_wifi(bool stat) {
-  if (stat)
+void check_wifi() {
+  if (wifi_connected)
     display.drawBitmap(113, 0, wifi, 15, 15, 1);
   else
     display.drawBitmap(113, 0, no_wifi, 15, 15, 1);
   display.display();
 }
 
+void update_oled() {
+  display.clearDisplay(); 
+  check_wifi();
+  display.setTextSize(1);
+  display.setTextColor(SH110X_WHITE);
+  display.setCursor(20,0);
+  display.print("FOREST MONITOR");
+  display.setCursor(0,8);
+  display.println();
+  // display.println("____________________");   
+
+  display.print("Humid: ");
+  display.print(humid);
+  display.println("%");
+
+  display.print("Temp : ");
+  display.print(temp);
+  display.print((char)247);
+  display.println("C");
+  
+
+  display.print("ip   : ");
+  if (wifi_stat())
+    display.println(ip_addr);
+  else
+    display.println("!");
+
+  display.print("packets : ");
+  display.println(counter);
+
+  display.print("Status  : ");
+  if ((flame == 1) && (smoke == 1))
+    display.println("Smoke & flame");
+  else if(smoke == 1)
+    display.println("Smoke");
+  else if (flame == 1)
+    display.println("Flame");
+  else
+    display.println("Safe");
+
+  display.display();
+}

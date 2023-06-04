@@ -14,6 +14,7 @@
 #define OLED_RESET -1   //   QT-PY / XIAO
 #define LOGO16_GLCD_HEIGHT 16
 #define LOGO16_GLCD_WIDTH  16
+
 Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 int counter = 0;
 StaticJsonDocument<200> doc;  
@@ -21,11 +22,16 @@ StaticJsonDocument<200> doc;
 void setup() {
   Serial.begin(115200);
   delay(250); // wait for the OLED to power up
+  Serial.println("Hi 1");
   
   // display.begin(i2c_Address, true); // Address 0x3C default
- 
+
+  Serial.println("Hi 2");
+
   // display.display();
   delay(2000);  
+
+  Serial.println("Hi 3");
   // while (!Serial);
   
   LoRa.begin(433E6);

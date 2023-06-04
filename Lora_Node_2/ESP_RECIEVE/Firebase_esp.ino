@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 
 //Provide the token generation process info.
@@ -11,8 +10,11 @@
 // #define WIFI_SSID "Redmi Note 9 Pro Max"
 // #define WIFI_PASSWORD "12345678"
 
-#define WIFI_SSID "Home wifi"
-#define WIFI_PASSWORD "youwillneverknow"
+// #define WIFI_SSID "Home wifi"
+// #define WIFI_PASSWORD "youwillneverknow"
+
+#define WIFI_SSID "eyantra_drone"
+#define WIFI_PASSWORD "eyantra@123"
 
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyDWjNUhJ8LaPVPsytvWwu0Q6nxXwJ4wIac"
@@ -30,113 +32,156 @@ unsigned long sendDataPrevMillis = 0;
 bool signupOK = false;
 bool db_initialised = false;
 
-void db_init(){
-  // Serial.begin(115200);
+// void Wifi_disconnected(WiFiEvent_t event) {
+//   wifi_connected = false;
+//   check_wifi();
+//   Serial.print(event);
+//   // Wifi.reconnect();
+// }
+
+
+
+void wifi_init() {
+  // WiFi.onEvent(Wifi_disconnected); //, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+  WiFi.onEvent(WiFiDisconnectEvent, WiFiEvent_t::SYSTEM_EVENT_STA_DISCONNECTED);
+  WiFi.onEvent(WiFiConnectEvent, WiFiEvent_t::SYSTEM_EVENT_STA_CONNECTED);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  
   Serial.print("Connecting to Wi-Fi");
+  // int i = 0;
   while (WiFi.status() != WL_CONNECTED){
+    // if (i == 0) {
+    //   display.clearDisplay();
+    //   display.setCursor(0, 30);
+    //   display.print("Connecting to Wi-Fi");
+    //   display.display();
+    //   Serial.println("hi");
+    // }
+    // i++;
+    // if (i == 5) i=0;
+
+    // display.print(".");
+    // display.display();
     Serial.print(".");
     delay(300);
   }
+}
 
-  // if ((WiFi.status() == WL_CONNECTED) && !db_initialised)
-  Serial.println();
-  Serial.print("Connected with IP: ");
-  Serial.println(WiFi.localIP());
-  Serial.println();
+void db_init(){
+  // Serial.begin(115200);
+  wifi_connected = true;
 
-  /* Assign the api key (required) */
-  config.api_key = API_KEY;
+  if ((WiFi.status() == WL_CONNECTED) && !db_initialised) {
+    Serial.println();
+    Serial.print("Connected with IP: ");
+    Serial.println(WiFi.localIP());
+    strcpy(ip_addr,WiFi.localIP().toString().c_str());
+    Serial.println();
 
-  /* Assign the RTDB URL (required) */
-  config.database_url = DATABASE_URL;
+    /* Assign the api key (required) */
+    config.api_key = API_KEY;
 
-  /* Sign up */
-  if (Firebase.signUp(&config, &auth, "", "")){
-    Serial.println("ok");
-    signupOK = true;
+    /* Assign the RTDB URL (required) */
+    config.database_url = DATABASE_URL;
+
+    /* Sign up */
+    if (Firebase.signUp(&config, &auth, "", "")){
+      Serial.println("ok");
+      signupOK = true;
+    }
+    else{
+      Serial.printf("%s\n", config.signer.signupError.message.c_str());
+    }
+
+    /* Assign the callback function for the long running token generation task */
+    config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
+    
+    Firebase.begin(&config, &auth);
+    Firebase.reconnectWiFi(true);
+    
+    db_initialised = true;
   }
-  else{
-    Serial.printf("%s\n", config.signer.signupError.message.c_str());
-  }
+}
 
-  /* Assign the callback function for the long running token generation task */
-  config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
-  
-  Firebase.begin(&config, &auth);
-  Firebase.reconnectWiFi(true);
+bool wifi_stat() {
+  if (WiFi.status() == WL_CONNECTED)
+    return true;
+  else 
+    return false;
 }
 
 void send_msg(int smoke, int flame, int count, float temp, float humid){
   bool data_sent = false;
-  while (!data_sent){
-    if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 5000 || sendDataPrevMillis == 0)){
-      sendDataPrevMillis = millis();
-      // Writing the value of smoke
-      if (Firebase.RTDB.setInt(&fbdo, "node_1/smoke_detected", smoke)){
-        Serial.println("PASSED");
-        // Serial.println("PATH: " + fbdo.dataPath());
-        // Serial.println("TYPE: " + fbdo.dataType());
-        data_sent = true;
-      }
-      else {
-        Serial.println("FAILED");
-        Serial.println("REASON: " + fbdo.errorReason());
-        data_sent = false;
-      }
-      
-      // Writing the value of flame
-      if (Firebase.RTDB.setInt(&fbdo, "node_1/flame_detected", flame)){
-        Serial.println("PASSED");
-        // Serial.println("PATH: " + fbdo.dataPath());
-        // Serial.println("TYPE: " + fbdo.dataType());
-        data_sent = true;
-      }
-      else {
-        Serial.println("FAILED");
-        Serial.println("REASON: " + fbdo.errorReason());
-        data_sent = false;
-      }
+  if (db_initialised) {
+    // while (!data_sent){
+      if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 5000 || sendDataPrevMillis == 0)){
+        sendDataPrevMillis = millis();
+        // Writing the value of smoke
+        if (Firebase.RTDB.setInt(&fbdo, "node_1/smoke_detected", smoke)){
+          Serial.println("PASSED");
+          // Serial.println("PATH: " + fbdo.dataPath());
+          // Serial.println("TYPE: " + fbdo.dataType());
+          data_sent = true;
+        }
+        else {
+          Serial.println("FAILED");
+          Serial.println("REASON: " + fbdo.errorReason());
+          data_sent = false;
+        }
+        
+        // Writing the value of flame
+        if (Firebase.RTDB.setInt(&fbdo, "node_1/flame_detected", flame)){
+          Serial.println("PASSED");
+          // Serial.println("PATH: " + fbdo.dataPath());
+          // Serial.println("TYPE: " + fbdo.dataType());
+          data_sent = true;
+        }
+        else {
+          Serial.println("FAILED");
+          Serial.println("REASON: " + fbdo.errorReason());
+          data_sent = false;
+        }
 
-      // Writing the value of count
-      if (Firebase.RTDB.setInt(&fbdo, "node_1/count", count)){
-        Serial.println("PASSED");
-        // Serial.println("PATH: " + fbdo.dataPath());
-        // Serial.println("TYPE: " + fbdo.dataType());
-        data_sent = true;
-      }
-      else {
-        Serial.println("FAILED");
-        Serial.println("REASON: " + fbdo.errorReason());
-        data_sent = false;
-      }
+        // Writing the value of count
+        if (Firebase.RTDB.setInt(&fbdo, "node_1/count", count)){
+          Serial.println("PASSED");
+          // Serial.println("PATH: " + fbdo.dataPath());
+          // Serial.println("TYPE: " + fbdo.dataType());
+          data_sent = true;
+        }
+        else {
+          Serial.println("FAILED");
+          Serial.println("REASON: " + fbdo.errorReason());
+          data_sent = false;
+        }
 
-      // Writing the value of temperature
-      if (Firebase.RTDB.setInt(&fbdo, "node_1/temperature", temp)){
-        Serial.println("PASSED");
-        // Serial.println("PATH: " + fbdo.dataPath());
-        // Serial.println("TYPE: " + fbdo.dataType());
-        data_sent = true;
-      }
-      else {
-        Serial.println("FAILED");
-        Serial.println("REASON: " + fbdo.errorReason());
-        data_sent = false;
-      }
+        // Writing the value of temperature
+        if (Firebase.RTDB.setInt(&fbdo, "node_1/temperature", temp)){
+          Serial.println("PASSED");
+          // Serial.println("PATH: " + fbdo.dataPath());
+          // Serial.println("TYPE: " + fbdo.dataType());
+          data_sent = true;
+        }
+        else {
+          Serial.println("FAILED");
+          Serial.println("REASON: " + fbdo.errorReason());
+          data_sent = false;
+        }
 
-      // Writing the value of humidity
-      if (Firebase.RTDB.setInt(&fbdo, "node_1/humidity", humid)){
-        Serial.println("PASSED");
-        // Serial.println("PATH: " + fbdo.dataPath());
-        // Serial.println("TYPE: " + fbdo.dataType());
-        data_sent = true;
+        // Writing the value of humidity
+        if (Firebase.RTDB.setInt(&fbdo, "node_1/humidity", humid)){
+          Serial.println("PASSED");
+          // Serial.println("PATH: " + fbdo.dataPath());
+          // Serial.println("TYPE: " + fbdo.dataType());
+          data_sent = true;
+        }
+        else {
+          Serial.println("FAILED");
+          Serial.println("REASON: " + fbdo.errorReason());
+          data_sent = false;
+        }
       }
-      else {
-        Serial.println("FAILED");
-        Serial.println("REASON: " + fbdo.errorReason());
-        data_sent = false;
-      }
-    }
+    // }
   }
-  
 }
