@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Firebase_ESP_Client.h>
+#include <time.h>
 
 //Provide the token generation process info.
 #include "addons/TokenHelper.h"
@@ -39,6 +40,10 @@ bool db_initialised = false;
 //   // Wifi.reconnect();
 // }
 
+// For getting time
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 19800;
+const int   daylightOffset_sec = 3600;
 
 
 void wifi_init() {
@@ -65,6 +70,7 @@ void wifi_init() {
     // display.display();
     Serial.print(".");
     delay(300);
+
   }
 }
 
@@ -73,6 +79,9 @@ void db_init(){
   wifi_connected = true;
 
   if ((WiFi.status() == WL_CONNECTED) && !db_initialised) {
+
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
     Serial.println();
     Serial.print("Connected with IP: ");
     Serial.println(WiFi.localIP());
@@ -111,7 +120,7 @@ bool wifi_stat() {
     return false;
 }
 
-void send_msg(int smoke, int flame, int count, float temp, float humid){
+void send_msg(int smoke, int flame, int count, float temp, float humid, int bat){
   bool data_sent = false;
   if (db_initialised) {
     // while (!data_sent){
@@ -180,6 +189,117 @@ void send_msg(int smoke, int flame, int count, float temp, float humid){
           Serial.println("FAILED");
           Serial.println("REASON: " + fbdo.errorReason());
           data_sent = false;
+        }
+
+        // Writing the value of battery
+        if (Firebase.RTDB.setInt(&fbdo, "node_1/battper", bat)){
+          Serial.println("PASSED");
+          // Serial.println("PATH: " + fbdo.dataPath());
+          // Serial.println("TYPE: " + fbdo.dataType());
+          data_sent = true;
+        }
+        else {
+          Serial.println("FAILED");
+          Serial.println("REASON: " + fbdo.errorReason());
+          data_sent = false;
+        }
+
+
+        //Data logging
+        struct tm timeinfo;
+        if(!getLocalTime(&timeinfo)){
+          Serial.println("Failed to obtain time");
+        } else {
+          // sprintf(day_time, "%A, %B %d %Y %H:%M:%S", &timeinfo);
+          int year = timeinfo.tm_year + 1900;
+          int month = timeinfo.tm_mon + 1;
+          int day = timeinfo.tm_mday;
+          int hour = timeinfo.tm_hour;
+          int minute = timeinfo.tm_min;
+          int second = timeinfo.tm_sec;
+
+          String date_time= String(year) + "-" + String(month) + "-" + String(day) + " " + String(hour) + ":" + String(minute) + ":" + String(second);
+
+          Serial.println(date_time);
+
+          /////////////////////////////////
+          if (Firebase.RTDB.setInt(&fbdo, "node_1_log/"+date_time+"/smoke_detected", smoke)){
+            Serial.println("PASSED");
+            // Serial.println("PATH: " + fbdo.dataPath());
+            // Serial.println("TYPE: " + fbdo.dataType());
+            data_sent = true;
+          }
+          else {
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            data_sent = false;
+          }
+          
+          // Writing the value of flame
+          if (Firebase.RTDB.setInt(&fbdo, "node_1_log/"+date_time+"/flame_detected", flame)){
+            Serial.println("PASSED");
+            // Serial.println("PATH: " + fbdo.dataPath());
+            // Serial.println("TYPE: " + fbdo.dataType());
+            data_sent = true;
+          }
+          else {
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            data_sent = false;
+          }
+
+          // Writing the value of count
+          if (Firebase.RTDB.setInt(&fbdo, "node_1_log/"+date_time+"/count", count)){
+            Serial.println("PASSED");
+            // Serial.println("PATH: " + fbdo.dataPath());
+            // Serial.println("TYPE: " + fbdo.dataType());
+            data_sent = true;
+          }
+          else {
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            data_sent = false;
+          }
+
+          // Writing the value of temperature
+          if (Firebase.RTDB.setInt(&fbdo, "node_1_log/"+date_time+"/temperature", temp)){
+            Serial.println("PASSED");
+            // Serial.println("PATH: " + fbdo.dataPath());
+            // Serial.println("TYPE: " + fbdo.dataType());
+            data_sent = true;
+          }
+          else {
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            data_sent = false;
+          }
+
+          // Writing the value of humidity
+          if (Firebase.RTDB.setInt(&fbdo, "node_1_log/"+date_time+"/humidity", humid)){
+            Serial.println("PASSED");
+            // Serial.println("PATH: " + fbdo.dataPath());
+            // Serial.println("TYPE: " + fbdo.dataType());
+            data_sent = true;
+          }
+          else {
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            data_sent = false;
+          }
+
+          // Writing the value of battery
+          if (Firebase.RTDB.setInt(&fbdo, "node_1_log/"+date_time+"/battper", bat)){
+            Serial.println("PASSED");
+            // Serial.println("PATH: " + fbdo.dataPath());
+            // Serial.println("TYPE: " + fbdo.dataType());
+            data_sent = true;
+          }
+          else {
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            data_sent = false;
+          }
+          /////////////////////////////////
         }
       }
     // }

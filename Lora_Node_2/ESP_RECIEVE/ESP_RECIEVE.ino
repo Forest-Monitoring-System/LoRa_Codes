@@ -20,7 +20,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 #define dio0 2
 
 StaticJsonDocument<200> doc; 
-int smoke=0, flame=0, counter=0;  
+int smoke=0, flame=0, counter=0, bat=0;  
 float temp=0.0, humid=0.0; 
 bool wifi_connected = false;
 char ip_addr[20];
@@ -95,8 +95,9 @@ void loop() {
       counter = doc["count"];  
       temp  = doc["temp"];  
       humid = doc["humid"];
+      bat = doc["battper"];
 
-      send_msg(smoke, flame, counter, temp, humid);
+      send_msg(smoke, flame, counter, temp, humid, bat);
 
       update_oled();
 

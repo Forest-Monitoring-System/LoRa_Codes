@@ -136,7 +136,7 @@ void update_oled() {
   display.println("C");
   
 
-  display.print("ip   : ");
+  display.print("ip  : ");
   if (wifi_stat())
     display.println(ip_addr);
   else
@@ -154,6 +154,10 @@ void update_oled() {
     display.println("Flame");
   else
     display.println("Safe");
+
+  display.print("battery : ");
+  display.print(bat);
+  display.println("%");
 
   display.display();
 }
